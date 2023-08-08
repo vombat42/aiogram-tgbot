@@ -6,27 +6,46 @@ from aiogram import Bot, Dispatcher, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.fsm_storage.redis import RedisStorage2
 
-from tgbot.config import load_config
+# from tgbot.config import load_config
 # from tgbot.filters.admin import AdminFilter
 # from tgbot.handlers.admin import register_admin
 # from tgbot.handlers.echo import register_echo
 # from tgbot.handlers.user import register_user
 # from tgbot.middlewares.environment import EnvironmentMiddleware
 
-config = load_config(".env")
-print(config)
-print('-----------------------------')
-print(config.tg_bot.token)
-print('-----------------------------')
+from tgbot.loader import bot, dp, config
+# print(config)
 
 logger = logging.getLogger(__name__)
 
-bot = Bot(config.tg_bot.token, parse_mode="HTML")
-dp = Dispatcher(bot)
+async def start_bot(bot: Bot):
+    from tgbot.loader import bot
+    from tgbot.keyboards import set_commands
+    from tgbot.handlers import send_to_admin
+    await send_to_admin("Бот запущен")
+    await set_commands(bot)
+
+async def stop_bot(bot: Bot):
+    # from tgbot.handlers import send_to_admin_stop
+    # await send_to_admin_stop()
+    from tgbot.handlers import send_to_admin
+    await send_to_admin("--- Stop! ---")
+
 
 if __name__ == '__main__':
-    from tgbot.handlers import dp, send_to_admin
-    executor.start_polling(dp, on_startup=send_to_admin)
+    # from tgbot.handlers import send_to_admin_start
+    executor.start_polling(dp, on_startup=start_bot, on_shutdown=stop_bot)
+
+
+
+# ===== E N D ===================================================================
+
+
+
+
+
+
+
 
 # def register_all_middlewares(dp, config):
 #     dp.setup_middleware(EnvironmentMiddleware(config=config))

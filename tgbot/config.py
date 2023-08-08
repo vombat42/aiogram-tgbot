@@ -7,7 +7,7 @@ from environs import Env
 class DbConfig:
     user: str
     password: str
-    database: str
+    name: str
     host: str
     port: str
 
@@ -44,7 +44,7 @@ def load_config(path: str = None):
         db=DbConfig(
             user=env.str('PG_USER'),
             password=env.str('PG_PASS'),
-            database=env.str('PG_DBNAME'),
+            name=env.str('PG_DBNAME'),
             host=env.str('PG_HOST'),
             port=env.str('PG_PORT')
         ),

@@ -5,8 +5,8 @@ from tgbot.config import load_config
 
 config = load_config(".env")
 bot = Bot(config.tg_bot.token, parse_mode="HTML")
-dp = Dispatcher(bot)
-
+dp = Dispatcher()
+print(')-----> loader.py')
 t_exercises = 'exercises' # таблица БД "список упражнений"
 t_events = 'events' # таблица БД "события (выполненные упражнения)"
 

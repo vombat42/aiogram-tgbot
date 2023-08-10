@@ -11,4 +11,4 @@ async def set_commands(bot: Bot):
 		# BotCommand(command="/help", description= "Помощь"),
 	]
 	await bot.set_my_commands(commands, BotCommandScopeDefault())
-	print(')----------> set_commands DONE!')
+	print(')-----> set_commands DONE!')

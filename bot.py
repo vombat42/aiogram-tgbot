@@ -1,41 +1,60 @@
-# import asyncio
+import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher, executor
+from aiogram import Bot, Dispatcher
+from aiogram.types import Message
+from aiogram.filters import Command
 
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.contrib.fsm_storage.redis import RedisStorage2
+from tgbot.handlers.user import user_start, user_hello
+# from tgbot.handlers.exercises import exercises_start, exercises_select, exercises_count, exercises_wrong_message
+from tgbot.handlers.exercises import *
+from tgbot.utils.states_exercises import StatesExercises
+from tgbot.utils.callbackdata import ExInfo
+
+# from aiogram.contrib.fsm_storage.memory import MemoryStorage
+# from aiogram.contrib.fsm_storage.redis import RedisStorage2
 
 # from tgbot.config import load_config
 # from tgbot.filters.admin import AdminFilter
-# from tgbot.handlers.admin import register_admin
 # from tgbot.handlers.echo import register_echo
 # from tgbot.handlers.user import register_user
 # from tgbot.middlewares.environment import EnvironmentMiddleware
 
 from tgbot.loader import bot, dp, config
-# print(config)
+print(config)
 
 logger = logging.getLogger(__name__)
 
 async def start_bot(bot: Bot):
-    from tgbot.loader import bot
     from tgbot.keyboards import set_commands
     from tgbot.handlers import send_to_admin
     await send_to_admin("Бот запущен")
     await set_commands(bot)
 
 async def stop_bot(bot: Bot):
-    # from tgbot.handlers import send_to_admin_stop
-    # await send_to_admin_stop()
     from tgbot.handlers import send_to_admin
     await send_to_admin("--- Stop! ---")
 
+async def start():
+    print(')-----> Start')
+    dp.startup.register(start_bot)
+    dp.shutdown.register(stop_bot)
+    dp.message.register(user_start, Command(commands=["start"]))
+    dp.message.register(user_hello, Command(commands=["hello"]))
+    dp.message.register(exercises_start, Command(commands=["exercise"]))
+    # dp.callback_query.register(exercises_select, ExInfo.filter(), StatesExercises.EX_SELECT)
+    # dp.message.register(exercises_wrong_message, StatesExercises.EX_COUNT)
+    dp.message.register(exercises_count, StatesExercises.EX_COUNT)
+    # dp.callback_query.register(exercises_confirm, ExInfo.filter(), StatesExercises.EX_CONFIRM)
+    dp.callback_query.register(exercises_confirm, StatesExercises.EX_CONFIRM)
+    dp.callback_query.register(exercises_select, ExInfo.filter())
+    try:
+        await dp.start_polling(bot, skip_updates=True)
+    finally:
+        await bot.session.close()
 
 if __name__ == '__main__':
-    # from tgbot.handlers import send_to_admin_start
-    executor.start_polling(dp, on_startup=start_bot, on_shutdown=stop_bot)
-
+    asyncio.run(start())
 
 
 # ===== E N D ===================================================================

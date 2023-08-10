@@ -1,24 +1,26 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram.utils.callback_data import CallbackData
-
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from tgbot.utils.callbackdata import ExInfo
 
 # формируем клавиатуру с упражнениями
-from tgbot.loader import but_exercises
-markup_ex = InlineKeyboardMarkup(row_width=3)
-for i in range(0,len(but_exercises), 3):
-    markup_ex.insert(InlineKeyboardButton(text=but_exercises[i][1], callback_data=str(i)))
-    if len(but_exercises)-i>=3:
-        markup_ex.insert(InlineKeyboardButton(text=but_exercises[i+1][1], callback_data=str(i+1)))
-        markup_ex.insert(InlineKeyboardButton(text=but_exercises[i+2][1], callback_data=str(i+2)))
-    elif len(but_exercises)-i==2:
-        markup_ex.insert(InlineKeyboardButton(text=but_exercises[i+1][1], callback_data=str(i+1)))
-        markup_ex.insert(InlineKeyboardButton(text=' ', callback_data='-1'))
-    elif len(but_exercises)-i==1:
-        markup_ex.insert(InlineKeyboardButton(text=' ', callback_data='-1'))
-        markup_ex.insert(InlineKeyboardButton(text=' ', callback_data='-1'))
-markup_ex.insert(InlineKeyboardButton(text='В главное меню', callback_data='-2'))
+def get_markup_ex():
+    markup_ex = InlineKeyboardBuilder()
+    from tgbot.loader import but_exercises
+    for i in but_exercises:
+        markup_ex.button(text=i[1], callback_data=ExInfo(action='select',ex_id=i[0], name=i[1], unit=i[2]))
+    if len(but_exercises)%3 != 0:
+        for i in range(3-len(but_exercises)%3):
+            markup_ex.button(text=' ', callback_data=ExInfo(action='nothing_to_do',ex_id=-1, name='', unit=''))
+    markup_ex.button(text='В главное меню', callback_data=ExInfo(action='to_main',ex_id=-2, name='', unit=''))
+    markup_ex.adjust(3)
+    return markup_ex.as_markup()
 
 # формируем клавиатуру подтверждения ввода
-markup_yes_no = InlineKeyboardMarkup(row_width=2)
-markup_yes_no.insert(InlineKeyboardButton(text="Записать", callback_data="Y"))
-markup_yes_no.insert(InlineKeyboardButton(text="Отменить", callback_data="N"))
+def get_markup_yes_no():
+    markup_yes_no = InlineKeyboardBuilder()
+    markup_yes_no.button(text="Записать", callback_data="Y")
+    markup_yes_no.button(text="Отменить", callback_data="N")
+    markup_yes_no.button(text="В главное меню", callback_data="MM")
+    markup_yes_no.adjust(2)
+    return markup_yes_no.as_markup()
+

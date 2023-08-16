@@ -1,4 +1,5 @@
 from aiogram.filters.callback_data import CallbackData
+from datetime import date
 # from typing import Optional
 
 class ExInfo(CallbackData, prefix='ex'):
@@ -6,6 +7,6 @@ class ExInfo(CallbackData, prefix='ex'):
 	ex_id: int
 	name: str
 	unit: str
-	# ex_id: Optional[int]
-	# name: Optional[str]
-	# unit: Optional[str]
+
+
+

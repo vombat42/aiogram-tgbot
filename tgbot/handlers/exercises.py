@@ -1,9 +1,11 @@
 from aiogram import Bot
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
+from datetime import date
 from tgbot.keyboards import get_markup_ex, get_markup_yes_no
-from tgbot.utils.states_exercises import StatesExercises
+from tgbot.utils.states import StatesExercises
 from tgbot.utils.callbackdata import ExInfo
+from tgbot.utils.pg_func import db_events_add
 
 # ---------------------------------------------------------------------
 
@@ -48,14 +50,17 @@ async def exercises_count(message: Message, bot: Bot, state: FSMContext):
             data = await state.get_data()
             await bot.delete_message(message.chat.id, data.get('ex_select_msg_id'))
             msg_text = f"Записать <b><u> {data.get('ex_name')} - {count} {data.get('ex_unit')}</u></b> ?"
-            msg = await bot.send_message(chat_id=message.chat.id, text=msg_text, reply_markup=get_markup_yes_no())
+            msg = await bot.send_message(chat_id=message.chat.id,
+                                        text=msg_text,
+                                        reply_markup=get_markup_yes_no('Записать', 'Отменить', True))
             await state.set_state(StatesExercises.EX_CONFIRM)
             await state.update_data(ex_count=count,
                                     ex_select_msg_id=msg.message_id)
     await message.delete()
 
 
-async def exercises_confirm(call: CallbackQuery, bot: Bot, state: FSMContext, callback_data=ExInfo):
+# async def exercises_confirm(call: CallbackQuery, bot: Bot, state: FSMContext, callback_data=ExInfo):
+async def exercises_confirm(call: CallbackQuery, bot: Bot, state: FSMContext):
     data = await state.get_data()
     if not (call.data in ['MM','Y','N']): # выходим, если нажата пустая кнопка
         await call.answer(f'Нажата неверная кнопка')
@@ -81,6 +86,8 @@ async def exercises_confirm(call: CallbackQuery, bot: Bot, state: FSMContext, ca
         await bot.send_message(chat_id=call.message.chat.id, text=msg_text)
         # await exercises_record(data('ex_id'),data('ex_count'))
         temp = data.get('ex_start_msg_id')
+        # db_events_add(chat_id, ex_id, ex_count, ex_date)
+        db_events_add(call.message.chat.id, data.get('ex_id'), data.get('ex_count'), str(date.today()))
         await state.clear()
         await state.set_state(StatesExercises.EX_SELECT)
         await state.update_data(ex_start_msg_id=temp)

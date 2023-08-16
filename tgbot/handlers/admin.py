@@ -26,7 +26,7 @@ async def echo(message: Message):
     await message.reply(text=text)
 
 # @dp.message_handler()
-async def echo(message: Message):
+async def echo2(message: Message):
     text = f"Привет, ты написал: {message.text}"
     # await message.reply(text=text, reply_markup=markup_ex)
     await message.reply(text=text)

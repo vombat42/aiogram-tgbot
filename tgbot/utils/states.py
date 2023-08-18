@@ -13,6 +13,5 @@ class StatesExercises(StatesGroup):
 
 class StatesReport(StatesGroup):
 	REP_SELECT = State()
-	REP_START_PERIOD= State()
-	REP_END_PERIOD= State()
+	REP_PERIOD= State()
 	REP_CONFIRM= State()

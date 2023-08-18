@@ -40,7 +40,8 @@ async def start():
 
     # ----- start, hello -----
     dp.message.register(user_start, Command(commands=["start"]))
-    dp.message.register(user_hello, Command(commands=["hello"]), States.MAIN_MENU)
+    dp.message.register(user_hello, Command(commands=["hello"]))
+    # dp.message.register(user_hello, Command(commands=["hello"]), States.MAIN_MENU)
     # ----- exercises -----
     dp.message.register(exercises_start, Command(commands=["exercise"]))
     dp.message.register(exercises_count, StatesExercises.EX_COUNT)
@@ -49,8 +50,7 @@ async def start():
     # ----- report -----
     dp.message.register(report_start, Command(commands=["report"]))
     dp.callback_query.register(report_select, StatesReport.REP_SELECT)
-    dp.message.register(report_period_start, StatesReport.REP_START_PERIOD)
-    dp.message.register(report_period_end, StatesReport.REP_END_PERIOD)
+    dp.message.register(report_period, StatesReport.REP_PERIOD)
     dp.callback_query.register(report_confirm, StatesReport.REP_CONFIRM)
     
     try:

@@ -18,13 +18,7 @@ def get_markup_ex():
     return markup_ex.as_markup()
 
 # формируем клавиатуру подтверждения ввода
-# def get_markup_yes_no():
-#     markup_yes_no = InlineKeyboardBuilder()
-#     markup_yes_no.button(text="Записать", callback_data="Y")
-#     markup_yes_no.button(text="Отменить", callback_data="N")
-#     markup_yes_no.button(text="В главное меню", callback_data="MM")
-#     markup_yes_no.adjust(2)
-#     return markup_yes_no.as_markup()
+# (text_yes: Текст на кнопке ДА, text_no: Текст на кнопке НЕТ, mmenu: Наличие конки В ГЛАВНОЕ МЕНЮ)
 def get_markup_yes_no(text_yes: str, text_no: str, mmenu: bool):
     markup_yes_no = InlineKeyboardBuilder()
     markup_yes_no.button(text=text_yes, callback_data="Y")
@@ -45,3 +39,13 @@ def get_markup_report():
     markup_report.adjust(2)
     return markup_report.as_markup()
 
+
+# ----- END -----
+
+# def get_markup_yes_no():
+#     markup_yes_no = InlineKeyboardBuilder()
+#     markup_yes_no.button(text="Записать", callback_data="Y")
+#     markup_yes_no.button(text="Отменить", callback_data="N")
+#     markup_yes_no.button(text="В главное меню", callback_data="MM")
+#     markup_yes_no.adjust(2)
+#     return markup_yes_no.as_markup()

@@ -7,6 +7,6 @@ async def user_start(message: Message, bot: Bot):
     await bot.send_message(chat_id=message.chat.id, text="Приступим :)")
 
 async def user_hello(message: Message, bot: Bot):
-    await bot.send_message(chat_id=message.chat.id, text="Уверен?")
+    await bot.send_message(chat_id=message.chat.id, text=f"Физкульт-привет, {message.from_user.first_name}!")
 
 

@@ -1,7 +1,9 @@
+import asyncio
 import psycopg2
 from datetime import date
-from tgbot.loader import config, cur, t_events
+from tgbot.loader import config, cur, t_events, t_exercises
 
+# ----------------------------------------------------------------------
 
 def get_userid_from_chatid(chat_id: int):
 	cur.execute(f"SELECT id FROM users WHERE chat_id='{chat_id}';")
@@ -9,8 +11,6 @@ def get_userid_from_chatid(chat_id: int):
 
 
 def db_events_add(chat_id, ex_id, ex_count, ex_date):
-	# cur.execute(f"SELECT id FROM users WHERE chat_id='{chat_id}';")
-	# user_id=cur.fetchone()[0]
 	user_id = get_userid_from_chatid(chat_id)
 	cur.execute(
 	   f"INSERT INTO {t_events} (date_enent, user_id, ex_id, ex_count) VALUES ('{ex_date}',{user_id},{ex_id},{ex_count});"
@@ -27,5 +27,12 @@ def db_report(date_start: date, date_end: date, chat_id: int):
         f"AND user_id = {user_id} "
         f"GROUP BY ex_id, exercises.ex_name, exercises.ex_unit "
         f"ORDER BY ex_id;"
+    )
+    return cur.fetchall()
+
+
+def db_ex_list():
+    cur.execute(
+        f"SELECT id, ex_name, ex_unit FROM {t_exercises};"
     )
     return cur.fetchall()

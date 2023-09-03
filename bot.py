@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message
 from aiogram.filters import Command
 
@@ -42,11 +42,24 @@ async def start():
     dp.message.register(user_start, Command(commands=["start"]))
     dp.message.register(user_hello, Command(commands=["hello"]))
     # dp.message.register(user_hello, Command(commands=["hello"]), States.MAIN_MENU)
-    # ----- exercises -----
+    
+    # ----- manage exercises -----
+    dp.message.register(exercises_manage_select, Command(commands=["manage_exercise"]))
+    dp.callback_query.register(exercises_manage, ExInfo.filter(F.action.in_({'edit_ex', 'new_ex', 'manage_to_main'})))
+    dp.callback_query.register(exercises_edit, StatesExercises.EX_EDIT)
+    dp.message.register(exercises_edit_name, StatesExercises.EX_EDIT_NAME)
+    dp.callback_query.register(exercises_edit_name_confirm, StatesExercises.EX_EDIT_NAME_CONFIRM)
+    dp.callback_query.register(exercises_del, StatesExercises.EX_DEL)
+    dp.message.register(exercises_new_name, StatesExercises.EX_NEW_NAME)
+    dp.message.register(exercises_new_unit, StatesExercises.EX_NEW_UNIT)
+    dp.callback_query.register(exercises_new_confirm, StatesExercises.EX_NEW_CONFIRM)
+    
+    # ----- events exercises -----
     dp.message.register(exercises_start, Command(commands=["exercise"]))
     dp.message.register(exercises_count, StatesExercises.EX_COUNT)
     dp.callback_query.register(exercises_confirm, StatesExercises.EX_CONFIRM)
-    dp.callback_query.register(exercises_select, ExInfo.filter())
+    dp.callback_query.register(exercises_select, ExInfo.filter(F.action.in_({'select', 'to_main', 'nothing_to_do'})))
+
     # ----- report -----
     dp.message.register(report_start, Command(commands=["report"]))
     dp.callback_query.register(report_select, StatesReport.REP_SELECT)

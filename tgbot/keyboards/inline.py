@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.utils.callbackdata import ExInfo
+from tgbot.utils.pg_func import db_ex_list
 
 # ----------------------------------------------------------
 
@@ -39,6 +40,25 @@ def get_markup_report():
     markup_report.adjust(2)
     return markup_report.as_markup()
 
+# формируем клавиатуру управления упражнениями
+def get_markup_manage_ex_list():
+    markup_manage_ex_list = InlineKeyboardBuilder()
+    for i in db_ex_list():
+        markup_manage_ex_list.button(text=i[1], callback_data=ExInfo(action='edit_ex',ex_id=i[0], name=i[1], unit=i[2]))
+    markup_manage_ex_list.button(text='➕ Добавить новое', callback_data=ExInfo(action='new_ex',ex_id=-1, name='', unit=''))
+    markup_manage_ex_list.button(text='В главное меню', callback_data=ExInfo(action='manage_to_main',ex_id=-2, name='', unit=''))
+    markup_manage_ex_list.adjust(2)
+    return markup_manage_ex_list.as_markup()
+
+# формируем клавиатуру редактирования упражнения
+def get_markup_manage_ex():
+    markup_report = InlineKeyboardBuilder()
+    markup_report.button(text="Переименовать", callback_data='exName')
+    # markup_report.button(text="Изменить ед.изм.", callback_data='exUnit')
+    markup_report.button(text="Удалить", callback_data='exDel')
+    markup_report.button(text="Назад", callback_data='exManageSelect')
+    markup_report.adjust(2)
+    return markup_report.as_markup()
 
 # ----- END -----
 

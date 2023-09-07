@@ -8,11 +8,12 @@ from tgbot.utils.pg_func import db_ex_list
 # формируем клавиатуру с упражнениями
 def get_markup_ex():
     markup_ex = InlineKeyboardBuilder()
-    from tgbot.loader import but_exercises
-    for i in but_exercises:
+    # from tgbot.loader import but_exercises
+    but_ex = db_ex_list()
+    for i in but_ex:
         markup_ex.button(text=i[1], callback_data=ExInfo(action='select',ex_id=i[0], name=i[1], unit=i[2]))
-    if len(but_exercises)%3 != 0:
-        for i in range(3-len(but_exercises)%3):
+    if len(but_ex)%3 != 0:
+        for i in range(3-len(but_ex)%3):
             markup_ex.button(text=' ', callback_data=ExInfo(action='nothing_to_do',ex_id=-1, name='', unit=''))
     markup_ex.button(text='В главное меню', callback_data=ExInfo(action='to_main',ex_id=-2, name='', unit=''))
     markup_ex.adjust(3)

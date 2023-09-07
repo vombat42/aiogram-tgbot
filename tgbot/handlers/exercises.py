@@ -5,7 +5,8 @@ from datetime import date
 from tgbot.keyboards.inline import get_markup_ex, get_markup_yes_no, get_markup_manage_ex_list, get_markup_manage_ex
 from tgbot.utils.states import StatesExercises
 from tgbot.utils.callbackdata import ExInfo
-from tgbot.utils.pg_func import db_events_add
+from tgbot.utils.pg_func import db_events_add, db_exercises_add, db_exercises_delete, db_exercises_update, db_ex_count_events
+from tgbot.utils.helpers import delete_msg_list
 
 # ---------------------------------------------------------------------
 # async def exercises_wrong_message(message: Message):
@@ -127,6 +128,7 @@ async def exercises_manage(call: CallbackQuery, bot: Bot, state: FSMContext, cal
                  text=f"Выберите действие над <b><u> {callback_data.name} ({callback_data.unit})</u></b> ",
                  reply_markup=get_markup_manage_ex())
         await state.update_data(ex_edit_msg_id=msg.message_id,
+                                ex_id=callback_data.ex_id,
                                 ex_name=callback_data.name,
                                 ex_unit=callback_data.unit)
         await state.set_state(StatesExercises.EX_EDIT)
@@ -134,6 +136,7 @@ async def exercises_manage(call: CallbackQuery, bot: Bot, state: FSMContext, cal
         return
     if callback_data.action == 'new_ex': # создать запись "упражнение"
         msg = await bot.send_message(chat_id=call.message.chat.id, text=f"Введите наименование нового упражнения")
+        await state.update_data(ex_del_list_msg_id=[msg.message_id,])
         await state.set_state(StatesExercises.EX_NEW_NAME)
         await call.answer(f'Введите наименование нового упражнения')
         return
@@ -148,9 +151,11 @@ async def exercises_edit(call: CallbackQuery, bot: Bot, state: FSMContext):
         await call.answer(f'Назад')
         return
     if call.data == 'exDel':
+        count = await (db_ex_count_events(data.get('ex_id')))
+        # print('//------->>',count)
         msg = await bot.send_message(chat_id=call.message.chat.id,
             text=f"Удалить <b><u> {data.get('ex_name')} ({data.get('ex_unit')})</u></b> ?\n"
-                f"ВНИМАНИЕ! При этом удаляться все записанные ранее выполненные такие упражнения!",
+                f"ВНИМАНИЕ! При этом удаляться все записанные ранее <b><u>({count} записей)</u></b> выполненные такие упражнения!",
             reply_markup=get_markup_yes_no('Удалить', 'Отменить', False))
         await state.update_data(ex_del_msg_id=msg.message_id)
         await state.set_state(StatesExercises.EX_DEL)
@@ -189,8 +194,9 @@ async def exercises_edit_name_confirm(call: CallbackQuery, bot: Bot, state: FSMC
         await state.set_state(StatesExercises.EX_MANAGE_SELECT)
         await call.answer(f'Отмена')
         return
+    db_exercises_update(data.get('ex_name'), data.get('ex_id'))
     msg = await bot.send_message(chat_id=call.message.chat.id,
-        text=f"<b><u> {data.get('ex_old_name')} переименовано  в {data.get('ex_name')}</u></b>!")
+        text=f"<b>{data.get('ex_old_name')}</b> переименовано  в <b><u>{data.get('ex_name')}</u></b>!")
     await state.set_state(StatesExercises.EX_MANAGE_SELECT)
     await call.answer(f'Переименовано!')
     return
@@ -204,6 +210,7 @@ async def exercises_del(call: CallbackQuery, bot: Bot, state: FSMContext):
         await state.set_state(StatesExercises.EX_MANAGE_SELECT)
         await call.answer(f'Отмена')
         return
+    await db_exercises_delete(data.get('ex_id'))
     msg = await bot.send_message(chat_id=call.message.chat.id,
         text=f"Удалены записи с <b><u> {data.get('ex_name')} ({data.get('ex_unit')})</u></b>!")
     await state.set_state(StatesExercises.EX_MANAGE_SELECT)
@@ -212,9 +219,14 @@ async def exercises_del(call: CallbackQuery, bot: Bot, state: FSMContext):
 
 
 async def exercises_new_name(message: Message, bot: Bot, state: FSMContext):
+    data = await state.get_data()
     msg = await bot.send_message(chat_id=message.chat.id,
                     text=f"Введите единицу измерения")
     # await state.update_data(ex_manage_msg_id=msg.message_id)
+    tmp=data.get('ex_del_list_msg_id')
+    tmp.append(msg.message_id)
+    tmp.append(message.message_id)
+    await state.update_data(ex_del_list_msg_id=tmp)
     await state.update_data(ex_name=message.text)
     await state.set_state(StatesExercises.EX_NEW_UNIT)
     return
@@ -226,6 +238,10 @@ async def exercises_new_unit(message: Message, bot: Bot, state: FSMContext):
                     text=f"Создать упражнение <b>{data.get('ex_name')} ({message.text})</b>?",
                     reply_markup=get_markup_yes_no('Создать', 'Отменить', False))
     # await state.update_data(ex_manage_msg_id=msg.message_id)
+    tmp=data.get('ex_del_list_msg_id')
+    tmp.append(msg.message_id)
+    tmp.append(message.message_id)
+    await state.update_data(ex_del_list_msg_id=tmp)
     await state.update_data(ex_unit=message.text)
     await state.set_state(StatesExercises.EX_NEW_CONFIRM)
     return
@@ -233,12 +249,12 @@ async def exercises_new_unit(message: Message, bot: Bot, state: FSMContext):
 
 async def exercises_new_confirm(call: CallbackQuery, bot: Bot, state: FSMContext):
     data = await state.get_data()
-    # if data.get('ex_del_msg_id'):
-    #     await bot.delete_message(call.message.chat.id, data.get('ex_del_msg_id'))
+    await delete_msg_list(bot, call.message.chat.id, data.get('ex_del_list_msg_id'))
     if call.data == 'N':
         await state.set_state(StatesExercises.EX_MANAGE_SELECT)
         await call.answer(f'Отмена')
         return
+    db_exercises_add(data.get('ex_name'), data.get('ex_unit'))
     msg = await bot.send_message(chat_id=call.message.chat.id,
         text=f"Создано <b><u> {data.get('ex_name')} ({data.get('ex_unit')})</u></b>!")
     await state.set_state(StatesExercises.EX_MANAGE_SELECT)

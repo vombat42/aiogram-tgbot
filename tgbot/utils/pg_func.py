@@ -36,3 +36,30 @@ def db_ex_list():
         f"SELECT id, ex_name, ex_unit FROM {t_exercises};"
     )
     return cur.fetchall()
+
+
+# возвращает количество записей в таблице "events" с указанным упражнением 
+async def db_ex_count_events(ex_id):
+    cur.execute(
+        f"SELECT COUNT(*) FROM {t_events} WHERE ex_id = '{ex_id}';"
+    )
+    return cur.fetchone()[0]
+
+
+def db_exercises_add(ex_name, ex_unit):
+    cur.execute(
+       f"INSERT INTO {t_exercises} (ex_name, ex_unit) VALUES ('{ex_name}', '{ex_unit}');"
+    )
+
+
+async def db_exercises_delete(ex_id):
+    cur.execute(
+       f"DELETE FROM {t_exercises} WHERE id='{ex_id}';"
+    )
+
+
+def db_exercises_update(ex_name, ex_id):
+    cur.execute(
+       f"UPDATE {t_exercises} SET ex_name = '{ex_name}' WHERE id='{ex_id}';"
+    )
+
